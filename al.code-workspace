@@ -5,6 +5,9 @@
                     },
                     {
                         "path":  "ALGoDemo"
+                    },
+                    {
+                        "path":  "ALGoDemo.Test"
                     }
                 ],
     "settings":  {

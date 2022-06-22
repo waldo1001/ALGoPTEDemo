@@ -1,21 +1,43 @@
-#
+﻿#
 # Script for creating cloud development environment
 # Please do not modify this script as it will be auto-updated from the AL-Go Template
 # Recommended approach is to use as is or add a script (freddyk-devenv.ps1), which calls this script with the user specific parameters
 #
 Param(
     [string] $environmentName = "",
-    [bool] $reuseExistingEnvironment
+    [bool] $reuseExistingEnvironment,
+    [switch] $fromVSCode
 )
 
 $ErrorActionPreference = "stop"
 Set-StrictMode -Version 2.0
 
+$pshost = Get-Host
+if ($pshost.Name -eq "Visual Studio Code Host") {
+    if ($MyInvocation.InvocationName -eq '.' -or $MyInvocation.Line -eq '') {
+        $scriptName = Join-Path $PSScriptRoot $MyInvocation.MyCommand
+    }
+    else {
+        $scriptName = $MyInvocation.InvocationName
+    }
+    if (Test-Path -Path $scriptName -PathType Leaf) {
+        $scriptName = (Get-Item -path $scriptName).FullName
+        $pslink = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Windows PowerShell\Windows PowerShell.lnk"
+        if (!(Test-Path $pslink)) {
+            $pslink = "powershell.exe"
+        }
+        Start-Process -Verb runas $pslink @("-Command ""$scriptName"" -fromVSCode -environmentName '$environmentName' -reuseExistingEnvironment `$$reuseExistingEnvironment")
+        return
+    }
+}
+
+try {
 $ALGoHelperPath = "$([System.IO.Path]::GetTempFileName()).ps1"
 $webClient = New-Object System.Net.WebClient
 $webClient.CachePolicy = New-Object System.Net.Cache.RequestCachePolicy -argumentList ([System.Net.Cache.RequestCacheLevel]::NoCacheNoStore)
 $webClient.Encoding = [System.Text.Encoding]::UTF8
-$webClient.DownloadFile('https://raw.githubusercontent.com/microsoft/AL-Go-Actions/v1.1/AL-Go-Helper.ps1', $ALGoHelperPath)
+Write-Host "Downloading AL-Go Helper script"
+$webClient.DownloadFile('https://raw.githubusercontent.com/microsoft/AL-Go-Actions/v1.5/AL-Go-Helper.ps1', $ALGoHelperPath)
 . $ALGoHelperPath -local
 
 $baseFolder = Join-Path $PSScriptRoot ".." -Resolve
@@ -67,3 +89,9 @@ CreateDevEnv `
     -environmentName $environmentName `
     -reuseExistingEnvironment:$reuseExistingEnvironment `
     -baseFolder $baseFolder
+}
+finally {
+    if ($fromVSCode) {
+        Read-Host "Press ENTER to close this window"
+    }
+}

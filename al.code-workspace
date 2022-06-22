@@ -11,6 +11,9 @@
                     },
                     {
                         "path":  "foobar"
+                    },
+                    {
+                        "path":  "ALGoDemo.PerformanceTest"
                     }
                 ],
     "settings":  {

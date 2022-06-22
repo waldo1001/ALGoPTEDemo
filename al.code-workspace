@@ -8,6 +8,9 @@
                     },
                     {
                         "path":  "ALGoDemo.Test"
+                    },
+                    {
+                        "path":  "foobar"
                     }
                 ],
     "settings":  {
